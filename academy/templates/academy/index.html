@@ -1,5 +1,76 @@
-{% extends "academy/base.html" %}
+{% extends 'academy/base.html' %}
 
 {% block content %}
+
+<div class="p-5 mb-4 bg-light rounded-3 border shadow-sm">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold text-dark">Вітаємо в Defeat Academy 🎓</h1>
+        <p class="col-md-8 fs-4 text-muted">
+            Найкраща платформа для перевірки твоїх знань. Проходь тести, слідкуй за прогресом та змагайся з друзями в реальному часі.
+        </p>
+
+        <div class="mt-4">
+            {% if user.is_authenticated %}
+                <a href="{% url 'academy:courses' %}" class="btn btn-primary btn-lg px-4 gap-3">
+                    🚀 Продовжити навчання
+                </a>
+                <a href="{% url 'academy:profile' %}" class="btn btn-outline-secondary btn-lg px-4">
+                    Мій прогрес
+                </a>
+            {% else %}
+                <a href="{% url 'users:register' %}" class="btn btn-success btn-lg px-4 gap-3">
+                    Почати безкоштовно
+                </a>
+                <a href="{% url 'users:login' %}" class="btn btn-outline-dark btn-lg px-4">
+                    Увійти в акаунт
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row align-items-md-stretch">
+
+    <div class="col-md-4 mb-3">
+        <div class="h-100 p-4 bg-white border rounded-3 shadow-sm">
+            <div style="font-size: 3rem;">📚</div>
+            <h2 class="mt-2">Різноманітні Курси</h2>
+            <p>Доступ до сотень питань з різних тем. Від загальних знань до спеціалізованих технічних навичок. База постійно оновлюється.</p>
+            <a href="{% url 'academy:courses' %}" class="btn btn-outline-primary" type="button">Переглянути курси</a>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="h-100 p-4 bg-white border rounded-3 shadow-sm">
+            <div style="font-size: 3rem;">📊</div>
+            <h2 class="mt-2">Детальна Статистика</h2>
+            <p>Ми зберігаємо історію твоїх відповідей. Аналізуй свої сильні та слабкі сторони, слідкуй за середнім балом та покращуй результати.</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'academy:profile' %}" class="btn btn-outline-secondary" type="button">Моя статистика</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="h-100 p-4 bg-white border rounded-3 shadow-sm">
+            <div style="font-size: 3rem;">⚔️</div>
+            <h2 class="mt-2">Змагання</h2>
+            <p>Набридло вчитися наодинці? Кидай виклик друзям! Створюй батл-посилання та дізнайся, хто з вас справжній експерт.</p>
+            <p>В процесі реалізації...</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Готовий перевірити себе?</h5>
+                <p class="card-text">Приєднуйся до спільноти розумних людей вже сьогодні.</p>
+                <a href="{% url 'academy:courses' %}" class="btn btn-dark">Перейти до тестів</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock content %}

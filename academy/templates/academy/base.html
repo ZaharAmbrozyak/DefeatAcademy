@@ -2,156 +2,86 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Defeat Academy</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        /* --- ЗАГАЛЬНІ СТИЛІ --- */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f6f9; /* Світло-сірий фон */
-            color: #333;
+            background-color: #f8f9fa; /* Світлий фон */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
-
-        /* --- НАВІГАЦІЯ (ВЕРХНЯ ПАНЕЛЬ) --- */
-        header {
-            background-color: #2c3e50; /* Темно-синій */
-            color: white;
-            padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .main-content {
+            flex: 1; /* Притискає футер до низу */
         }
-
-        .navbar {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .logo a {
-            font-size: 1.5rem;
+        .navbar-brand {
             font-weight: bold;
-            color: white;
-            text-decoration: none;
             letter-spacing: 1px;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-links a {
-            color: #ecf0f1;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: #3498db; /* Блакитний при наведенні */
-        }
-
-        /* Стиль для кнопки виходу, щоб виглядала як посилання */
-        .logout-btn {
-            background: none;
-            border: 1px solid #ecf0f1;
-            color: #ecf0f1;
-            cursor: pointer;
-            padding: 5px 15px;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background-color: #e74c3c; /* Червоний при наведенні */
-            border-color: #e74c3c;
-            color: white;
-        }
-
-        /* --- ОСНОВНИЙ КОНТЕНТ --- */
-        .main-container {
-            flex: 1; /* Розтягує блок на всю висоту */
-            max-width: 1000px;
-            width: 100%;
-            margin: 30px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            box-sizing: border-box; /* Щоб padding не ламав ширину */
-        }
-
-        /* --- ПІДВАЛ (FOOTER) --- */
-        footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #2c3e50;
-            color: #bdc3c7;
-            font-size: 0.9rem;
-            margin-top: auto; /* Притискає футер до низу */
-        }
-
-        /* --- ЗАГОЛОВКИ ТА ПОСИЛАННЯ В ТЕКСТІ --- */
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-
-        a {
-            color: #2980b9;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="navbar">
-            <div class="logo">
-                <a href="{% url 'academy:index' %}">🛡️ Defeat Academy</a>
-            </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'academy:index' %}">🛡️ Defeat Academy</a>
 
-            <div class="nav-links">
-                <a href="{% url 'academy:courses' %}">Всі курси</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                {% if user.is_authenticated %}
-                    <span style="color: #bdc3c7;">Вітаю, {{ user.username }}</span>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'academy:courses' %}">Курси</a>
+                    </li>
+                </ul>
 
-                    <a href="{% url 'academy:profile' %}">👤 Профіль</a>
+                <div class="d-flex align-items-center gap-3">
+                    {% if user.is_authenticated %}
+                        <span class="text-light me-2">Вітаю, <strong>{{ user.username }}</strong></span>
 
-                    <form action="{% url 'users:logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="logout-btn">Вийти</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'users:login' %}">Увійти</a>
-                    <a href="{% url 'users:register' %}" style="background: #27ae60; padding: 5px 15px; border-radius: 4px; color: white;">Реєстрація</a>
-                {% endif %}
+                        <a href="{% url 'academy:profile' %}" class="btn btn-outline-light btn-sm">👤 Профіль</a>
+
+                        <form action="{% url 'users:logout' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Вийти</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'users:login' %}" class="btn btn-outline-light btn-sm">Увійти</a>
+                        <a href="{% url 'users:register' %}" class="btn btn-primary btn-sm">Реєстрація</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <div class="main-container">
-        {% block content %}
-        {% endblock content %}
-    </div>
+    <main class="container main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-    <footer>
-        <p>&copy; 2025 Defeat Academy. Платформа для навчання.</p>
+        <div class="bg-white p-4 rounded shadow-sm">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <div class="container">
+            <small>&copy; 2025 Defeat Academy. Навчальна платформа.</small>
+        </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

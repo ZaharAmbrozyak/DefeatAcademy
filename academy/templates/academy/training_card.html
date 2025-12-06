@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Тренувальний режим</h5>
+                    <span class="badge bg-warning text-dark">Бали: {{ score }}</span>
+                </div>
+
+                <div class="card-body">
+                    <p class="text-muted small">Питання {{ index }} з {{ total }}</p>
+                    <h3 class="card-title mb-4">{{ question.text }}</h3>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if ai_feedback %}
+                        <div class="alert alert-info border-start border-info border-4">
+                            <h5 class="alert-heading"><i class="bi bi-robot"></i> Пояснення AI-Тьютора:</h5>
+                            <hr>
+                            <p class="mb-0">{{ ai_feedback }}</p>
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" action="">
+                        {% csrf_token %}
+
+                        <div class="list-group mb-4">
+                            {% for choice in choices %}
+                                <label class="list-group-item list-group-item-action d-flex align-items-center gap-3"
+                                       for="choice_{{ choice.id }}">
+
+                                    <input class="form-check-input flex-shrink-0"
+                                           type="radio"
+                                           name="choice"
+                                           id="choice_{{ choice.id }}"
+                                           value="{{ choice.id }}"
+                                           {% if ai_feedback %}disabled{% endif %}>
+
+                                    <span class="form-check-label stretched-link">
+                                        {{ choice.text }}
+                                    </span>
+                                </label>
+                            {% empty %}
+                                <p class="text-danger">Варіанти відповідей відсутні.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+                            {% if ai_feedback %}
+                                <button type="submit" name="next_question" value="true" class="btn btn-primary btn-lg">
+                                    Наступне питання <i class="bi bi-arrow-right"></i>
+                                </button>
+                            {% else %}
+                                <button type="submit" name="next_question" value="true" class="btn btn-outline-secondary">
+                                    Пропустити
+                                </button>
+
+                                <button type="submit" name="submit_answer" value="true" class="btn btn-success px-4">
+                                    Підтвердити <i class="bi bi-check-lg"></i>
+                                </button>
+                            {% endif %}
+
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center small">
+                    Powered by OpenAI gpt-4o-mini & Django
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
