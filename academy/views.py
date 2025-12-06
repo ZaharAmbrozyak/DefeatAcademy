@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Avg
 from .models import Course, Test, Choice, Result, Question
 from django.contrib import messages
-from .services import calculate_confidence_score, get_ai_tutor_feedback
+# from .services import calculate_confidence_score, get_ai_tutor_feedback
 from .forms import CourseForm, TestForm, QuestionForm
 
 # Create your views here.
@@ -104,125 +104,125 @@ def profile(request):
 
     return render(request, 'academy/profile.html', context)
 
-SESSION_QUEUE = 'training_queue'
-SESSION_INDEX = 'current_question_index'
-SESSION_SCORE = 'current_score'
-SESSION_FEEDBACK = 'ai_feedback_context'
+# SESSION_QUEUE = 'training_queue'
+# SESSION_INDEX = 'current_question_index'
+# SESSION_SCORE = 'current_score'
+# SESSION_FEEDBACK = 'ai_feedback_context'
 
 
-@require_http_methods
-def training_mode_view(request):
-    """
-    Основне представлення для режиму тренування.
-    Керує життєвим циклом сесії тестування.
-    """
-
-    # 1. Ініціалізація сесії (Якщо це перший захід або рестарт)
-    if SESSION_QUEUE not in request.session:
-        # Вибираємо 10 випадкових питань.
-        # Зверніть увагу: ми беремо лише ID, щоб уникнути проблем серіалізації.[5]
-        questions_queryset = Question.objects.all().order_by('?')[:10]
-        if not questions_queryset.exists():
-            messages.error(request, "У базі даних відсутні питання.")
-            return redirect('home')  # Припускаємо наявність url 'home'
-
-        request.session = list(questions_queryset.values_list('id', flat=True))
-        request.session = 0
-        request.session = 0
-        request.session = None  # Для збереження стану між POST і GET
-
-    # Отримання даних з сесії
-    queue = request.session.get(SESSION_QUEUE, )
-    index = request.session.get(SESSION_INDEX, 0)
-    score = request.session.get(SESSION_SCORE, 0)
-
-    # Перевірка завершення тесту
-    if index >= len(queue):
-        # Очищення сесії після завершення
-        final_score = score
-        total_questions = len(queue)
-        request.session.flush()  # Або видалити конкретні ключі
-        return render(request, 'training_complete.html', {
-            'score': final_score,
-            'total': total_questions
-        })
-
-    # Завантаження об'єкта поточного питання
-    current_question_id = queue[index]
-    question = get_object_or_404(Question, id=current_question_id)
-    choices = question.choice_set.all()  # Припускаємо related_name за замовчуванням
-
-    # 2. Обробка POST запиту (Дії користувача)
-    if request.method == "POST":
-
-        # Сценарій А: Користувач натиснув "Підтвердити відповідь"
-        if 'submit_answer' in request.POST:
-            selected_choice_id = request.POST.get('choice')
-
-            # Валідація вибору
-            if not selected_choice_id:
-                messages.warning(request, "Будь ласка, оберіть варіант відповіді.")
-                # Повертаємо сторінку без змін
-                return render(request, 'training_card.html', {
-                    'question': question,
-                    'choices': choices,
-                    'score': score,
-                    'index': index + 1,
-                    'total': len(queue)
-                })
-
-            choice = get_object_or_404(Choice, id=selected_choice_id)
-
-            if choice.is_correct:
-                # Правильна відповідь
-                points = calculate_confidence_score(is_correct=True)
-                request.session += points
-                messages.success(request, f"Правильно! +{points} балів.")
-
-                # Перехід до наступного питання
-                request.session += 1
-                request.session = None
-                return redirect('training_mode')  # PRG Pattern [14]
-
-            else:
-                # Неправильна відповідь -> Виклик AI Tutor
-                messages.error(request, "Неправильно. Див. пояснення нижче.")
-
-                correct_choice = choices.filter(is_correct=True).first()
-                correct_text = correct_choice.text if correct_choice else "Невідомо"
-
-                # Виклик сервісу
-                feedback = get_ai_tutor_feedback(
-                    question_text=question.text,
-                    user_answer=choice.text,
-                    correct_answer=correct_text
-                )
-
-                # Зберігаємо фідбек в сесії, щоб відобразити його при рендері
-                # Індекс питання НЕ збільшуємо, даємо користувачу прочитати
-                request.session = feedback
-                return redirect('training_mode')  # Перезавантаження для відображення стану
-
-        # Сценарій Б: Користувач натиснув "Наступне питання" (або "Пропустити")
-        elif 'next_question' in request.POST:
-            request.session += 1
-            request.session = None  # Очищуємо старий фідбек
-            return redirect('training_mode')
-
-    # 3. Обробка GET запиту (Рендеринг сторінки)
-    # Перевіряємо, чи є збережений AI-фідбек з попереднього кроку
-    ai_feedback = request.session.get(SESSION_FEEDBACK)
-
-    context = {
-        'question': question,
-        'choices': choices,
-        'score': score,
-        'index': index + 1,
-        'total': len(queue),
-        'ai_feedback': ai_feedback,  # Передаємо в шаблон
-    }
-
-    return render(request, 'training_card.html', context)
+# @require_http_methods
+# def training_mode_view(request):
+#     """
+#     Основне представлення для режиму тренування.
+#     Керує життєвим циклом сесії тестування.
+#     """
+#
+#     # 1. Ініціалізація сесії (Якщо це перший захід або рестарт)
+#     if SESSION_QUEUE not in request.session:
+#         # Вибираємо 10 випадкових питань.
+#         # Зверніть увагу: ми беремо лише ID, щоб уникнути проблем серіалізації.[5]
+#         questions_queryset = Question.objects.all().order_by('?')[:10]
+#         if not questions_queryset.exists():
+#             messages.error(request, "У базі даних відсутні питання.")
+#             return redirect('home')  # Припускаємо наявність url 'home'
+#
+#         request.session = list(questions_queryset.values_list('id', flat=True))
+#         request.session = 0
+#         request.session = 0
+#         request.session = None  # Для збереження стану між POST і GET
+#
+#     # Отримання даних з сесії
+#     queue = request.session.get(SESSION_QUEUE, )
+#     index = request.session.get(SESSION_INDEX, 0)
+#     score = request.session.get(SESSION_SCORE, 0)
+#
+#     # Перевірка завершення тесту
+#     if index >= len(queue):
+#         # Очищення сесії після завершення
+#         final_score = score
+#         total_questions = len(queue)
+#         request.session.flush()  # Або видалити конкретні ключі
+#         return render(request, 'training_complete.html', {
+#             'score': final_score,
+#             'total': total_questions
+#         })
+#
+#     # Завантаження об'єкта поточного питання
+#     current_question_id = queue[index]
+#     question = get_object_or_404(Question, id=current_question_id)
+#     choices = question.choice_set.all()  # Припускаємо related_name за замовчуванням
+#
+#     # 2. Обробка POST запиту (Дії користувача)
+#     if request.method == "POST":
+#
+#         # Сценарій А: Користувач натиснув "Підтвердити відповідь"
+#         if 'submit_answer' in request.POST:
+#             selected_choice_id = request.POST.get('choice')
+#
+#             # Валідація вибору
+#             if not selected_choice_id:
+#                 messages.warning(request, "Будь ласка, оберіть варіант відповіді.")
+#                 # Повертаємо сторінку без змін
+#                 return render(request, 'training_card.html', {
+#                     'question': question,
+#                     'choices': choices,
+#                     'score': score,
+#                     'index': index + 1,
+#                     'total': len(queue)
+#                 })
+#
+#             choice = get_object_or_404(Choice, id=selected_choice_id)
+#
+#             if choice.is_correct:
+#                 # Правильна відповідь
+#                 points = calculate_confidence_score(is_correct=True)
+#                 request.session += points
+#                 messages.success(request, f"Правильно! +{points} балів.")
+#
+#                 # Перехід до наступного питання
+#                 request.session += 1
+#                 request.session = None
+#                 return redirect('training_mode')  # PRG Pattern [14]
+#
+#             else:
+#                 # Неправильна відповідь -> Виклик AI Tutor
+#                 messages.error(request, "Неправильно. Див. пояснення нижче.")
+#
+#                 correct_choice = choices.filter(is_correct=True).first()
+#                 correct_text = correct_choice.text if correct_choice else "Невідомо"
+#
+#                 # Виклик сервісу
+#                 feedback = get_ai_tutor_feedback(
+#                     question_text=question.text,
+#                     user_answer=choice.text,
+#                     correct_answer=correct_text
+#                 )
+#
+#                 # Зберігаємо фідбек в сесії, щоб відобразити його при рендері
+#                 # Індекс питання НЕ збільшуємо, даємо користувачу прочитати
+#                 request.session = feedback
+#                 return redirect('training_mode')  # Перезавантаження для відображення стану
+#
+#         # Сценарій Б: Користувач натиснув "Наступне питання" (або "Пропустити")
+#         elif 'next_question' in request.POST:
+#             request.session += 1
+#             request.session = None  # Очищуємо старий фідбек
+#             return redirect('training_mode')
+#
+#     # 3. Обробка GET запиту (Рендеринг сторінки)
+#     # Перевіряємо, чи є збережений AI-фідбек з попереднього кроку
+#     ai_feedback = request.session.get(SESSION_FEEDBACK)
+#
+#     context = {
+#         'question': question,
+#         'choices': choices,
+#         'score': score,
+#         'index': index + 1,
+#         'total': len(queue),
+#         'ai_feedback': ai_feedback,  # Передаємо в шаблон
+#     }
+#
+#     return render(request, 'training_card.html', context)
 
 
 @login_required
