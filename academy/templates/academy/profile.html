@@ -1,42 +1,363 @@
 {% extends "academy/base.html" %}
+{% load static %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 20px auto; font-family: sans-serif;">
+<div class="profile-container">
 
-    <div style="background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-around; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        <div><h2 style="margin: 0;">{{ user.profile.level }}</h2><small>Рівень</small></div>
-        <div><h2 style="margin: 0;">{{ user.profile.xp }}</h2><small>XP</small></div>
-        <div><h2 style="margin: 0;">{{ user.profile.currency }} 💰</h2><small>Монети</small></div>
-        <div><h2 style="margin: 0;">{{ user.profile.status }}</h2><small>Статус</small></div>
-    </div>
+    <div class="profile-card">
 
-    <div style="text-align: center; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="profile-header-banner">
+            <div class="stats-grid">
+                <div class="stat-item level-box">
+                    <span class="stat-value">{{ user.profile.level }}</span>
+                    <span class="stat-label">Рівень</span>
+                </div>
 
-        <div style="width: 200px; height: 200px; margin: 0 auto 20px; overflow: hidden; border-radius: 50%; border: 5px solid #f0f0f0;">
-            <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="stat-item xp-box">
+                    <div class="xp-info">
+                        <span class="xp-current">{{ user.profile.xp }} XP</span>
+                        <span class="xp-target"> / {{ user.profile.get_next_level_threshold }} XP</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: {{ user.profile.xp_percentage }}%;"></div>
+                    </div>
+                </div>
+
+                <div class="stat-item currency-box">
+                    <span class="stat-value">{{ user.profile.currency }} 💰</span>
+                    <span class="stat-label">Монети</span>
+                </div>
+
+                <div class="stat-item status-box">
+                    <span class="status-badge">{{ user.profile.status }}</span>
+                    <span class="stat-label">Поточний статус</span>
+                </div>
+            </div>
         </div>
 
-        <h1 style="margin-bottom: 5px;">{{ user.username }}</h1>
-        <p style="color: gray; margin-top: 0;">{{ user.email }}</p>
 
-        <div style="text-align: left; max-width: 500px; margin: 30px auto; line-height: 1.6;">
-            {% if user.first_name or user.last_name %}
-                <p><strong>Ім'я:</strong> {{ user.first_name }} {{ user.last_name }}</p>
-            {% endif %}
+        <div class="profile-content">
+            <div class="profile-layout">
 
-            {% if user.profile.birth_date %}
-                <p><strong>Дата народження:</strong> {{ user.profile.birth_date }}</p>
-            {% endif %}
+                <div class="profile-identity">
+                    <div class="avatar-container">
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-img">
+                    </div>
+                    <h1 class="username">{{ user.username }}</h1>
+                    {% if user.first_name or user.last_name %}
+                        <h2 class="fullname">{{ user.first_name }} {{ user.last_name }}</h2>
+                    {% endif %}
+                </div>
 
-            {% if user.profile.bio %}
-                <p><strong>Про себе:</strong><br> {{ user.profile.bio }}</p>
-            {% endif %}
+                <div class="profile-details">
+                    <h3 class="details-title">Інформація</h3>
+
+                    <ul class="details-list">
+                        <li class="detail-item">
+                            <span class="detail-icon">📧</span>
+                            <div class="detail-text">
+                                <span class="detail-label">Email</span>
+                                <span class="detail-value">{{ user.email }}</span>
+                            </div>
+                        </li>
+
+                        {% if user.profile.birth_date %}
+                        <li class="detail-item">
+                            <span class="detail-icon">🎂</span>
+                            <div class="detail-text">
+                                <span class="detail-label">Дата народження</span>
+                                <span class="detail-value">{{ user.profile.birth_date }}</span>
+                            </div>
+                        </li>
+                        {% endif %}
+
+                        {% if user.profile.bio %}
+                        <li class="detail-item bio-item">
+                            <span class="detail-icon">📝</span>
+                            <div class="detail-text">
+                                <span class="detail-label">Про себе</span>
+                                <p class="bio-text">{{ user.profile.bio }}</p>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <div class="edit-button-container">
+                        <a href="{% url 'academy:edit_profile' %}" class="edit-btn">
+                            <span>⚙️ Налаштування профілю</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <a href="{% url 'academy:edit_profile' %}" style="display: inline-block; background-color: #6c757d; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; transition: background 0.3s;">
-            ⚙️ Налаштування профілю
-        </a>
-
     </div>
 </div>
+
+
+<style>
+    /* Основний контейнер сторінки */
+    .profile-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #333;
+    }
+
+    /* Картка профілю */
+    .profile-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1); /* М'яка тінь для об'єму */
+        overflow: hidden;
+    }
+
+    /* --- ВЕРХНІЙ БАНЕР (Гейміфікація) --- */
+    .profile-header-banner {
+        /* Твій фіолетовий градієнт */
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 30px 40px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 рівні колонки */
+        gap: 20px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 5px;
+    }
+
+    /* Статус бейдж */
+    .status-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Прогрес бар XP */
+    .xp-box {
+        grid-column: span 1; /* Або span 2 якщо хочеш ширший */
+        width: 100%;
+    }
+
+    .xp-info {
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .xp-target { opacity: 0.7; }
+
+    .progress-bar-container {
+        width: 100%;
+        height: 12px;
+        background-color: rgba(255,255,255,0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background-color: #fff; /* Білий колір смужки на фоні градієнта */
+        border-radius: 10px;
+        transition: width 0.6s ease-in-out;
+        box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+
+    /* --- НИЖНЯ ЧАСТИНА (Контент) --- */
+    .profile-content {
+        padding: 40px;
+    }
+
+    .profile-layout {
+        display: flex;
+        gap: 40px;
+    }
+
+    /* Ліва колонка (Ідентичність) */
+    .profile-identity {
+        flex: 1;
+        text-align: center;
+        border-right: 1px solid #eee;
+        padding-right: 40px;
+    }
+
+    .avatar-container {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 20px;
+        padding: 5px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .username {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #2c3e50;
+    }
+
+    .fullname {
+        margin: 5px 0 0;
+        font-size: 1.2rem;
+        color: #7f8c8d;
+        font-weight: normal;
+    }
+
+
+    /* Права колонка (Деталі) */
+    .profile-details {
+        flex: 2;
+    }
+
+    .details-title {
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 1.3rem;
+        color: #2c3e50;
+        border-bottom: 2px solid #f0f2f5;
+        padding-bottom: 10px;
+    }
+
+    .details-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .detail-icon {
+        font-size: 1.5rem;
+        margin-right: 15px;
+        padding-top: 2px;
+    }
+
+    .detail-text {
+        flex: 1;
+    }
+
+    .detail-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #95a5a6;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .detail-value {
+        font-size: 1.1rem;
+        color: #34495e;
+        font-weight: 500;
+    }
+
+    .bio-text {
+        margin: 0;
+        line-height: 1.6;
+        color: #34495e;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    /* Кнопка редагування */
+    .edit-button-container {
+        margin-top: 30px;
+        text-align: left;
+    }
+
+    .edit-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 24px;
+        background-color: #f0f2f5;
+        color: #2c3e50;
+        text-decoration: none;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .edit-btn:hover {
+        background-color: #e1e4e8;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+    }
+
+
+    /* --- АДАПТИВНІСТЬ (Для мобільних) --- */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr 1fr; /* 2 колонки на планшетах */
+            gap: 30px;
+        }
+
+        .profile-layout {
+            flex-direction: column; /* Ставимо колонки одна під одну */
+            gap: 30px;
+        }
+
+        .profile-identity {
+            border-right: none;
+            border-bottom: 1px solid #eee;
+            padding-right: 0;
+            padding-bottom: 30px;
+        }
+
+        .edit-button-container {
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr; /* 1 колонка на телефонах */
+        }
+        .profile-header-banner {
+            padding: 20px;
+        }
+        .profile-content {
+            padding: 20px;
+        }
+    }
+</style>
 {% endblock %}

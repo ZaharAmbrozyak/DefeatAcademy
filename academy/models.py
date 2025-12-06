@@ -50,18 +50,54 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, blank=True, verbose_name="Про себе")
     birth_date = models.DateField(null=True, blank=True, verbose_name="Дата народження")
 
-    level = models.PositiveIntegerField(default=0, verbose_name="Рівень")  # Змінив дефолт на 0, як ти хотів
-    xp = models.PositiveIntegerField(default=0, verbose_name="XP")
+    level = models.PositiveIntegerField(default=0, verbose_name="Рівень")
+    xp = models.PositiveIntegerField(default=0, verbose_name="XP")  # Поточний досвід на цьому рівні
     currency = models.PositiveIntegerField(default=0, verbose_name="Монети")
-
-    # Статус тепер може змінюватись автоматично, але max_length краще взяти із запасом
     status = models.CharField(max_length=100, default="Новонароджений", verbose_name="Статус")
 
-    courses = models.ManyToManyField(Course, blank=True, related_name='students')
+    courses = models.ManyToManyField('Course', blank=True, related_name='students')
+
+    # --- ЛОГІКА ЛЕВЕЛІНГА ---
+
+    def get_next_level_threshold(self):
+        """
+        Формула: скільки XP треба для наступного рівня.
+        Наприклад: 100 * (рівень + 1).
+        0 рівень -> треба 100 xp
+        1 рівень -> треба 200 xp
+        """
+        return (self.level + 1) * 100
+
+    def add_xp(self, amount):
+        """
+        Метод для додавання досвіду з автоматичним підвищенням рівня
+        """
+        self.xp += amount
+
+        while True:
+            threshold = self.get_next_level_threshold()
+            if self.xp >= threshold:
+                self.xp -= threshold  # Віднімаємо витрачений досвід
+                self.level += 1  # Піднімаємо рівень
+                # Тут можна додати бонус валюти за левел-ап, наприклад:
+                # self.currency += 50
+            else:
+                break
+
+        self.save()  # Зберігаємо зміни (це автоматично оновить статус)
+
+    @property
+    def xp_percentage(self):
+        """
+        Рахує відсоток заповнення для Progress Bar
+        """
+        threshold = self.get_next_level_threshold()
+        if threshold == 0: return 0
+        return (self.xp / threshold) * 100
+
+    # --- ЛОГІКА СТАТУСІВ (Твоя стара) ---
 
     def save(self, *args, **kwargs):
-        # Словник "Поріг рівня": "Статус"
-        # Важливо: порядок від найбільшого до найменшого!
         LEVEL_MAP = {
             50: "Успішна людина",
             20: "Випускник КШЕ",
@@ -74,17 +110,15 @@ class Profile(models.Model):
             0: "Новонароджений",
         }
 
-        # Проходимо по словнику. Перший поріг, який ми "перестрибнули", стає нашим статусом.
         for threshold, label in LEVEL_MAP.items():
             if self.level >= threshold:
                 self.status = label
-                break  # Зупиняємось, як тільки знайшли відповідний статус
+                break
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Профіль {self.user.username}"
-
 
 # Автоматичне створення профілю при реєстрації User
 @receiver(post_save, sender=User)
