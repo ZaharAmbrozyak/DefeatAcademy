@@ -10,4 +10,6 @@ urlpatterns = [
 
     # --- НОВИЙ РЯДОК ---
     path('profile/', views.profile, name='profile'),
+    path('profile/', views.profile, name='profile'),          # Тільки перегляд
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
 ]

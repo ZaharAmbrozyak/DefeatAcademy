@@ -1,0 +1,61 @@
+{% extends "academy/base.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 40px auto; font-family: sans-serif;">
+    
+    <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <h2 style="text-align: center; margin-top: 0; margin-bottom: 30px; color: #333;">Налаштування профілю</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <fieldset style="border: none; padding: 0; margin-bottom: 30px;">
+                <legend style="font-size: 1.2em; font-weight: bold; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #eee; width: 100%; padding-bottom: 10px;">
+                    👤 Обліковий запис
+                </legend>
+                
+                {% for field in u_form %}
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #555;">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small style="color: grey; display: block; margin-top: 5px;">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div style="color: #dc3545; font-size: 0.9em; margin-top: 5px;">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </fieldset>
+
+            <fieldset style="border: none; padding: 0; margin-bottom: 30px;">
+                <legend style="font-size: 1.2em; font-weight: bold; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #eee; width: 100%; padding-bottom: 10px;">
+                    📝 Деталі профілю
+                </legend>
+
+                {% for field in p_form %}
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #555;">{{ field.label }}</label>
+                    <div style="padding: 5px 0;">
+                        {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <div style="color: #dc3545; font-size: 0.9em; margin-top: 5px;">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </fieldset>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                <a href="{% url 'academy:profile' %}" style="color: #666; text-decoration: none; padding: 10px 20px; border-radius: 5px; transition: background 0.2s;">
+                    ← Скасувати
+                </a>
+                
+                <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);">
+                    Зберегти зміни
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -4,67 +4,39 @@
 <div style="max-width: 900px; margin: 20px auto; font-family: sans-serif;">
 
     <div style="background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-around; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        <div>
-            <h2 style="margin: 0; font-size: 2.5em;">{{ user.profile.level }}</h2>
-            <p style="margin: 0; opacity: 0.9;">Рівень</p>
-        </div>
-        <div>
-            <h2 style="margin: 0; font-size: 2.5em;">{{ user.profile.xp }}</h2>
-            <p style="margin: 0; opacity: 0.9;">XP</p>
-        </div>
-        <div>
-            <h2 style="margin: 0; font-size: 2.5em;">{{ user.profile.currency }} 💰</h2>
-            <p style="margin: 0; opacity: 0.9;">Монети</p>
-        </div>
-        <div>
-            <h2 style="margin: 0; font-size: 2.5em;">{{ user.profile.status }}</h2>
-            <p style="margin: 0; opacity: 0.9;">Статус</p>
-        </div>
+        <div><h2 style="margin: 0;">{{ user.profile.level }}</h2><small>Рівень</small></div>
+        <div><h2 style="margin: 0;">{{ user.profile.xp }}</h2><small>XP</small></div>
+        <div><h2 style="margin: 0;">{{ user.profile.currency }} 💰</h2><small>Монети</small></div>
+        <div><h2 style="margin: 0;">{{ user.profile.status }}</h2><small>Статус</small></div>
     </div>
 
-    <div style="display: flex; gap: 40px; align-items: flex-start;">
+    <div style="text-align: center; background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
 
-        <div style="text-align: center; width: 30%;">
-            <div style="width: 150px; height: 150px; margin: 0 auto; overflow: hidden; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-                <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <h2 style="margin-top: 15px;">{{ user.username }}</h2>
-            <p style="color: gray;">{{ user.email }}</p>
-            {% if user.profile.birth_date %}
-                <p>🎂 {{ user.profile.birth_date }}</p>
+        <div style="width: 200px; height: 200px; margin: 0 auto 20px; overflow: hidden; border-radius: 50%; border: 5px solid #f0f0f0;">
+            <img src="{{ user.profile.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+
+        <h1 style="margin-bottom: 5px;">{{ user.username }}</h1>
+        <p style="color: gray; margin-top: 0;">{{ user.email }}</p>
+
+        <div style="text-align: left; max-width: 500px; margin: 30px auto; line-height: 1.6;">
+            {% if user.first_name or user.last_name %}
+                <p><strong>Ім'я:</strong> {{ user.first_name }} {{ user.last_name }}</p>
             {% endif %}
-            <p>{{ user.profile.bio }}</p>
+
+            {% if user.profile.birth_date %}
+                <p><strong>Дата народження:</strong> {{ user.profile.birth_date }}</p>
+            {% endif %}
+
+            {% if user.profile.bio %}
+                <p><strong>Про себе:</strong><br> {{ user.profile.bio }}</p>
+            {% endif %}
         </div>
 
-        <div style="flex-grow: 1; background: #f9f9f9; padding: 25px; border-radius: 10px; border: 1px solid #ddd;">
-            <h3 style="margin-top: 0;">Редагувати профіль</h3>
+        <a href="{% url 'academy:edit_profile' %}" style="display: inline-block; background-color: #6c757d; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; transition: background 0.3s;">
+            ⚙️ Налаштування профілю
+        </a>
 
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                {% for field in u_form %}
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold;">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %} <span style="color: red;">{{ field.errors }}</span> {% endif %}
-                    </div>
-                {% endfor %}
-
-                <hr>
-
-                {% for field in p_form %}
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold;">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %} <span style="color: red;">{{ field.errors }}</span> {% endif %}
-                    </div>
-                {% endfor %}
-
-                <button type="submit" style="background-color: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                    Зберегти зміни
-                </button>
-            </form>
-        </div>
     </div>
 </div>
 {% endblock %}
