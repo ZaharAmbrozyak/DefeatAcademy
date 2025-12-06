@@ -114,6 +114,7 @@ USE_TZ = True
 
 # LOGIN_REDIRECT_URL = 'academy:index'
 # LOGOUT_REDIRECT_URL = 'academy:index'
+LOGIN_URL = 'users:login'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 

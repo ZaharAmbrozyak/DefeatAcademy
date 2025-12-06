@@ -19,14 +19,14 @@ class Test(models.Model):
 
 class Question(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
-    text = models.CharField(max_length=200)
+    text = models.CharField(max_length=1000)
 
     def __str__(self):
         return self.text
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
-    text = models.CharField(max_length=200)
+    text = models.CharField(max_length=500)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
