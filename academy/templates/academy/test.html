@@ -1,35 +1,148 @@
 {% extends 'academy/base.html' %}
 
 {% block content %}
-<h1>{{ test.name }}</h1>
 
-<form action="" method="post">
-    {% csrf_token %}
-    {% for question in test.questions.all %}
-    <div class="question-block" style="margin-bottom: 25px;">
-        <h3>{{ forloop.counter }}. {{ question.text }}</h3>
-
-        {% for choice in question.choices.all %}
-        <div>
-            <label>
-                <input type="radio"
-                       name="question_{{ question.id }}"
-                       value="{{ choice.id }}"
-                       required>
-                {{ choice.text }}
-            </label>
-        </div>
-        {% endfor %}
-    </div>
-    {% empty %}
-    <p>Питань немає.</p>
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="error-toast">{{ message }}</div>
     {% endfor %}
+</div>
+{% endif %}
 
-    {% if test.questions.exists %}
-    <button type="submit">
-        Відправити відповіді
-    </button>
+{% if is_on_leave %}
+<div class="akademka-overlay">
+    <div class="akademka-card">
+        <div class="icon">🎓🚫</div>
+        <h1>АКАДЕМКА</h1>
+        <p>Ваш баланс: <span style="color: #e74c3c; font-weight: bold;">{{ user.profile.currency }} 💰</span></p>
+        <p>Ви влізли в борги і були відраховані в академвідпустку.</p>
+        <a href="{% url 'academy:index' %}" class="btn-home">На головну</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="test-container">
+    <div class="header-section">
+        <h1>{{ test.name }}</h1>
+        <div class="balance-badge">
+            Баланс: <span class="money-count">{{ user.profile.currency }}</span> 💰
+        </div>
+    </div>
+
+    <form action="" method="post" id="gambling-form">
+        {% csrf_token %}
+
+        {% for question in test.questions.all %}
+        <div class="question-card">
+            <h3 class="question-title">{{ forloop.counter }}. {{ question.text }}</h3>
+            <div class="choices-grid">
+                {% for choice in question.choices.all %}
+                <label class="choice-label">
+                    <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" required>
+                    <span class="choice-box">{{ choice.text }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p>Питань немає.</p>
+        {% endfor %}
+
+        {% if test.questions.exists %}
+        <div class="betting-zone">
+            <div class="bet-label">Ваша ставка (All-in дозволено!):</div>
+            <div class="bet-input-wrapper">
+                <input type="number" name="bet_amount" id="bet" min="0" value="0" class="bet-input">
+                <span class="currency-symbol">💰</span>
+            </div>
+            <p class="bet-hint">Якщо програєте більше, ніж маєте — отримаєте Академку.</p>
+        </div>
+
+        <button type="submit" class="gamble-btn" id="submit-btn">
+            🎲 Зробити ставку
+        </button>
+        {% endif %}
+    </form>
+
+    {% if result_message %}
+    <div class="result-popup {% if result_message == 'win' %}win{% else %}loss{% endif %}">
+        {% if result_message == 'win' %}
+            <h2>+{{ winnings }} 💰</h2>
+            <p>Перемога!</p>
+        {% else %}
+            <h2>Ставка програла</h2>
+            <p>Баланс зменшено.</p>
+        {% endif %}
+        <button onclick="this.parentElement.style.display='none'">ОК</button>
+    </div>
     {% endif %}
-</form>
+</div>
 
-{% endblock content %}
+<style>
+    /* Повідомлення */
+    .messages-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+    .error-toast { background: #e74c3c; color: white; padding: 15px 25px; margin-bottom: 10px; border-radius: 8px; animation: slideIn 0.5s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    /* Академка */
+    .akademka-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.92); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+    .akademka-card { background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; box-shadow: 0 0 60px rgba(231, 76, 60, 0.6); animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55); border: 4px solid #e74c3c; }
+    .akademka-card h1 { margin: 10px 0; color: #c0392b; font-size: 2.5em; font-weight: 900; letter-spacing: 2px; }
+    .akademka-card .icon { font-size: 70px; margin-bottom: 10px; }
+    .btn-home { display: inline-block; margin-top: 25px; padding: 12px 35px; background: #2c3e50; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; transition: transform 0.2s; }
+    .btn-home:hover { transform: scale(1.05); background: #34495e; }
+
+    /* Тест */
+    .test-container { max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: 'Segoe UI', sans-serif; }
+    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .balance-badge { background: #f1c40f; color: #333; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+    .question-card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .choices-grid { display: grid; gap: 10px; margin-top: 15px; }
+    .choice-box { display: block; padding: 15px; border: 2px solid #ecf0f1; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-weight: 500; color: #555; }
+    input:checked + .choice-box { border-color: #3498db; background: #ebf5fb; color: #2980b9; font-weight: bold; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); }
+    input[type="radio"] { display: none; }
+
+    .betting-zone { background: linear-gradient(135deg, #2c3e50, #1a252f); color: white; padding: 30px; border-radius: 20px; text-align: center; margin-top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .bet-label { font-size: 1.1em; opacity: 0.9; margin-bottom: 10px; }
+    .bet-input { background: none; border: none; border-bottom: 2px solid rgba(255,255,255,0.3); color: #f1c40f; font-size: 2.5em; width: 150px; text-align: center; font-weight: bold; transition: border-color 0.3s; }
+    .bet-input:focus { outline: none; border-bottom-color: #f1c40f; }
+    .currency-symbol { font-size: 2em; color: #f1c40f; vertical-align: middle; }
+    .bet-hint { margin-top: 15px; font-size: 0.9em; opacity: 0.7; }
+
+    .gamble-btn { width: 100%; padding: 18px; background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 15px; font-size: 1.3em; font-weight: bold; margin-top: 25px; cursor: pointer; transition: transform 0.1s, box-shadow 0.3s; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); text-transform: uppercase; letter-spacing: 1px; }
+    .gamble-btn:hover { box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6); transform: translateY(-2px); }
+    .gamble-btn:active { transform: scale(0.98); }
+
+    .result-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); text-align: center; z-index: 100; border: 4px solid #eee; min-width: 300px; animation: popIn 0.4s; }
+    .result-popup h2 { font-size: 2em; margin-top: 0; }
+    .result-popup.win { border-color: #2ecc71; } .result-popup.win h2 { color: #2ecc71; }
+    .result-popup.loss { border-color: #e74c3c; } .result-popup.loss h2 { color: #e74c3c; }
+    .result-popup button { margin-top: 20px; padding: 10px 30px; background: #333; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1em; }
+
+    .shaking-mode { animation: shake 0.5s infinite; }
+    @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-3px, 0px) rotate(1deg); } 75% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+
+<script>
+    document.getElementById('gambling-form').addEventListener('submit', function(e) {
+        const betInput = document.getElementById('bet');
+        const betValue = parseInt(betInput.value) || 0;
+
+        if (betValue < 0) {
+             e.preventDefault();
+             alert("Від'ємна ставка? Серйозно?");
+             return;
+        }
+
+        e.preventDefault();
+        document.body.classList.add('shaking-mode');
+        document.getElementById('submit-btn').innerText = "😬 Ставки зроблено...";
+
+        setTimeout(() => { this.submit(); }, 1500);
+    });
+</script>
+
+{% endblock %}

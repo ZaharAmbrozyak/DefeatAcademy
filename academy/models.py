@@ -1,11 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User  # <-- Додано для зв'язку з User
-from django.db.models.signals import post_save  # <-- Додано для сигналів
-from django.dispatch import receiver  # <-- Додано для сигналів
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
-
-# --- Твої існуючі моделі ---
+# --- МОДЕЛІ КУРСІВ ---
 
 class Course(models.Model):
     name = models.CharField(max_length=200)
@@ -41,7 +40,7 @@ class Choice(models.Model):
         return self.text
 
 
-# --- НОВА ЧАСТИНА: ПРОФІЛЬ ---
+# --- ПРОФІЛЬ ---
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -51,86 +50,75 @@ class Profile(models.Model):
     birth_date = models.DateField(null=True, blank=True, verbose_name="Дата народження")
 
     level = models.PositiveIntegerField(default=0, verbose_name="Рівень")
-    xp = models.PositiveIntegerField(default=0, verbose_name="XP")  # Поточний досвід на цьому рівні
-    currency = models.PositiveIntegerField(default=0, verbose_name="Монети")
+    xp = models.PositiveIntegerField(default=0, verbose_name="XP")
+
+    # ВАЖЛИВО: IntegerField дозволяє йти в мінус (для Академки)
+    currency = models.IntegerField(default=0, verbose_name="Монети")
+
     status = models.CharField(max_length=100, default="Новонароджений", verbose_name="Статус")
+    courses = models.ManyToManyField(Course, blank=True, related_name='students')
 
-    courses = models.ManyToManyField('Course', blank=True, related_name='students')
-
-    # --- ЛОГІКА ЛЕВЕЛІНГА ---
+    # --- ЛОГІКА ---
 
     def get_next_level_threshold(self):
-        """
-        Формула: скільки XP треба для наступного рівня.
-        Наприклад: 100 * (рівень + 1).
-        0 рівень -> треба 100 xp
-        1 рівень -> треба 200 xp
-        """
         return (self.level + 1) * 100
 
     def add_xp(self, amount):
-        """
-        Метод для додавання досвіду з автоматичним підвищенням рівня
-        """
         self.xp += amount
-
         while True:
             threshold = self.get_next_level_threshold()
             if self.xp >= threshold:
-                self.xp -= threshold  # Віднімаємо витрачений досвід
-                self.level += 1  # Піднімаємо рівень
-                # Тут можна додати бонус валюти за левел-ап, наприклад:
-                # self.currency += 50
+                self.xp -= threshold
+                self.level += 1
             else:
                 break
-
-        self.save()  # Зберігаємо зміни (це автоматично оновить статус)
+        self.save()
 
     @property
     def xp_percentage(self):
-        """
-        Рахує відсоток заповнення для Progress Bar
-        """
         threshold = self.get_next_level_threshold()
         if threshold == 0: return 0
         return (self.xp / threshold) * 100
 
-    # --- ЛОГІКА СТАТУСІВ (Твоя стара) ---
-
     def save(self, *args, **kwargs):
-        LEVEL_MAP = {
-            99: "Випускник КШЕ",
-            80: "4 курс КШЕ",
-            60: "3 курс КШЕ",
-            45: "2 курс КШЕ",
-            30: "1 курс КШЕ",
-            10: "Абітурієнт КШЕ",
-            5: "Відрахований з КПІ",
-            4: "Абітурієнт КПІ",
-            3: "Випускник школи",
-            2: "Школяр",
-            1: "Дитина",
-            0: "Новонароджений",
-        }
-
-        for threshold, label in LEVEL_MAP.items():
-            if self.level >= threshold:
-                self.status = label
-                break
+        # 1. Якщо баланс від'ємний — завжди "Академка"
+        if self.currency < 0:
+            self.status = "Академка"
+        else:
+            # 2. Якщо баланс позитивний — статус по рівню
+            LEVEL_MAP = {
+                99: "Випускник КШЕ",
+                80: "4 курс КШЕ",
+                60: "3 курс КШЕ",
+                45: "2 курс КШЕ",
+                30: "1 курс КШЕ",
+                10: "Абітурієнт КШЕ",
+                5: "Відрахований з КПІ",
+                4: "Абітурієнт КПІ",
+                3: "Випускник школи",
+                2: "Школяр",
+                1: "Дитина",
+                0: "Новонароджений",
+            }
+            for threshold, label in LEVEL_MAP.items():
+                if self.level >= threshold:
+                    self.status = label
+                    break
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Профіль {self.user.username}"
 
-# Автоматичне створення профілю при реєстрації User
+
+# --- СИГНАЛИ ---
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
 
-# Автоматичне збереження профілю при зміні User
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
