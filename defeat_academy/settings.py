@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'academy',
+    'users',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -111,7 +112,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+# LOGIN_REDIRECT_URL = 'academy:index'
+# LOGOUT_REDIRECT_URL = 'academy:index'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
