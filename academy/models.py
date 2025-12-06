@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 # Create your models here.
 class Course(models.Model):
     name = models.CharField(max_length=200)
@@ -13,6 +13,7 @@ class Test(models.Model):
     name = models.CharField(max_length=200)
     max_score = models.PositiveIntegerField(default=100)
 
+    duration = models.PositiveIntegerField(default=20, help_text='Хв')
     def __str__(self):
         return self.name
 
@@ -31,3 +32,12 @@ class Choice(models.Model):
     def __str__(self):
         return self.text
 
+class Result(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.FloatField()      # Кількість правильних відповідей
+    percentage = models.FloatField() # Відсоток успішності
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.test.name}: {self.percentage}%"

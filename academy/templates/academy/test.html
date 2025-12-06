@@ -1,35 +1,72 @@
 {% extends 'academy/base.html' %}
 
 {% block content %}
-<h1>{{ test.name }}</h1>
 
-<form action="" method="post">
-    {% csrf_token %}
-    {% for question in test.questions.all %}
-    <div class="question-block" style="margin-bottom: 25px;">
-        <h3>{{ forloop.counter }}. {{ question.text }}</h3>
-
-        {% for choice in question.choices.all %}
-        <div>
-            <label>
-                <input type="radio"
-                       name="question_{{ question.id }}"
-                       value="{{ choice.id }}"
-                       required>
-                {{ choice.text }}
-            </label>
-        </div>
-        {% endfor %}
+{% if show_results %}
+    <div style="background-color: #d4edda; color: #155724; padding: 20px; border-radius: 5px;">
+        <h2>Тест завершено!</h2>
+        <p>Ваш результат: <strong>{{ score }}</strong> з {{ total_questions }}</p>
+        <p>Оцінка: <strong>{{ percentage }}%</strong></p>
+        <a href="{% url 'academy:course' test.course.id %}">⬅️ Повернутися до курсу</a>
     </div>
-    {% empty %}
-    <p>Питань немає.</p>
-    {% endfor %}
 
-    {% if test.questions.exists %}
-    <button type="submit">
-        Відправити відповіді
-    </button>
-    {% endif %}
-</form>
+{% else %}
+    <div id="timer-box" style="position: sticky; top: 0; background: white; padding: 15px; border-bottom: 2px solid #007bff; text-align: right; font-weight: bold; font-size: 1.2em; z-index: 100;">
+        ⏳ Час залишилось: <span id="time-display" style="color: #d9534f;"></span>
+    </div>
+
+    <h1>{{ test.name }}</h1>
+
+    <form id="quiz-form" action="" method="post">
+        {% csrf_token %}
+        {% for question in test.questions.all %}
+        <div class="question-block" style="margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            <h3>{{ forloop.counter }}. {{ question.text }}</h3>
+            {% for choice in question.choices.all %}
+            <div>
+                <label>
+                    <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}">
+                    {{ choice.text }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+        {% empty %}
+        <p>Питань немає.</p>
+        {% endfor %}
+
+        {% if test.questions.exists %}
+        <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Відправити відповіді
+        </button>
+        {% endif %}
+    </form>
+
+    <script>
+        let timeLeft = {{ seconds_left }};
+        const display = document.getElementById('time-display');
+        const form = document.getElementById('quiz-form');
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        const timer = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                display.innerText = "0:00";
+                alert("Час вийшов! Ваші відповіді відправляються автоматично.");
+                form.submit();
+            } else {
+                display.innerText = formatTime(timeLeft);
+                timeLeft--;
+            }
+        }, 1000);
+
+        display.innerText = formatTime(timeLeft);
+    </script>
+{% endif %}
 
 {% endblock content %}
