@@ -45,7 +45,7 @@
                         <span class="text-light me-2">Вітаю, <strong>{{ user.username }}</strong></span>
 
                         <a href="{% url 'academy:profile' %}" class="btn btn-outline-light btn-sm">👤 Профіль</a>
-
+                        <a href="{% url 'academy:create_course' %}" class="btn btn-warning btn-sm text-dark me-2">➕ Створити курс</a>
                         <form action="{% url 'users:logout' %}" method="post" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger btn-sm">Вийти</button>

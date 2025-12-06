@@ -6,6 +6,7 @@ from django.db.models import Avg
 from .models import Course, Test, Choice, Result, Question
 from django.contrib import messages
 from .services import calculate_confidence_score, get_ai_tutor_feedback
+from .forms import CourseForm, TestForm, QuestionForm
 
 # Create your views here.
 def index(request):
@@ -222,3 +223,80 @@ def training_mode_view(request):
     }
 
     return render(request, 'training_card.html', context)
+
+
+@login_required
+def create_course(request):
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.author = request.user  # Прив'язуємо до автора
+            course.save()
+            return redirect('academy:course', course_id=course.id)
+    else:
+        form = CourseForm()
+    return render(request, 'academy/create_course.html', {'form': form})
+
+
+@login_required
+def create_test(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    # Перевірка: тільки автор може додавати тести
+    if course.author != request.user:
+        return redirect('academy:course', course_id=course.id)
+
+    if request.method == 'POST':
+        form = TestForm(request.POST)
+        if form.is_valid():
+            test = form.save(commit=False)
+            test.course = course
+            test.max_score = 0  # Поки що 0, будемо збільшувати при додаванні питань
+            test.save()
+            # Одразу йдемо додавати питання
+            return redirect('academy:add_question', test_id=test.id)
+    else:
+        form = TestForm()
+    return render(request, 'academy/create_test.html', {'form': form, 'course': course})
+
+
+@login_required
+def add_question(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    if test.course.author != request.user:
+        return redirect('academy:index')
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            # 1. Створюємо питання
+            q_text = form.cleaned_data['question_text']
+            question = Question.objects.create(test=test, text=q_text)
+
+            # 2. Збільшуємо макс. бал тесту
+            test.max_score += 1
+            test.save()
+
+            # 3. Створюємо варіанти відповідей
+            correct_num = form.cleaned_data['correct_answer']  # '1', '2', '3' або '4'
+
+            options = [
+                form.cleaned_data['option_1'],
+                form.cleaned_data['option_2'],
+                form.cleaned_data['option_3'],
+                form.cleaned_data['option_4']
+            ]
+
+            for i, text in enumerate(options, start=1):
+                Choice.objects.create(
+                    question=question,
+                    text=text,
+                    is_correct=(str(i) == correct_num)
+                )
+
+            # Перезавантажуємо сторінку, щоб додати ще одне питання
+            return redirect('academy:add_question', test_id=test.id)
+    else:
+        form = QuestionForm()
+
+    return render(request, 'academy/add_question.html', {'form': form, 'test': test})

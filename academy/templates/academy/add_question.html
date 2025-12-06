@@ -1,0 +1,48 @@
+{% extends 'academy/base.html' %}
+{% block content %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card p-4 shadow-sm">
+            <h3>Додати питання №{{ test.questions.count|add:1 }}</h3>
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label>Текст питання</label>
+                    {{ form.question_text }}
+                </div>
+
+                <div class="row">
+                    <div class="col-6 mb-2">{{ form.option_1 }}</div>
+                    <div class="col-6 mb-2">{{ form.option_2 }}</div>
+                    <div class="col-6 mb-2">{{ form.option_3 }}</div>
+                    <div class="col-6 mb-2">{{ form.option_4 }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label>Правильна відповідь:</label>
+                    {{ form.correct_answer }}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Зберегти і додати ще</button>
+            </form>
+        </div>
+        <div class="mt-3 text-center">
+             <a href="{% url 'academy:course' test.course.id %}" class="btn btn-success">✅ Завершити створення тесту</a>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <h4>Питання в цьому тесті ({{ test.questions.count }})</h4>
+        <ul class="list-group">
+            {% for q in test.questions.all %}
+                <li class="list-group-item">{{ q.text }}</li>
+            {% empty %}
+                <li class="list-group-item text-muted">Поки що пусто...</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

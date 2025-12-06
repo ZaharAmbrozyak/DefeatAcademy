@@ -1,0 +1,9 @@
+{% extends 'academy/base.html' %}
+{% block content %}
+<h2>Додати тест до курсу "{{ course.name }}"</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Далі: Додати питання</button>
+</form>
+{% endblock %}

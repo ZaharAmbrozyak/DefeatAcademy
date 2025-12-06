@@ -2,12 +2,17 @@
 
 {% block content %}
     <h2>Course: {{ course }}</h2>
-
     <h3>Tests:</h3>
+    <h1>{{ course.name }}</h1>
+
+{% if user == course.author %}
+    <a href="{% url 'academy:create_test' course.id %}" class="btn btn-outline-primary btn-sm mb-3">➕ Додати тест</a>
+{% endif %}
     <ul>
         {% for test in tests %}
             <li>
                 <p><a href="{% url 'academy:test' course.id test.id %}">{{ test.name|linebreaks }}</a></p>
+
             </li>
             {% empty %}
             <li>Тестів ще немає.</li>
