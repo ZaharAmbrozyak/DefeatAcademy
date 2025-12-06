@@ -1,0 +1,17 @@
+{% extends "academy/base.html" %}
+
+{% block content %}
+
+<h2>Courses</h2>
+
+<ul>
+    {% for course in courses %}
+        <li>
+            <a href="{% url 'academy:course' course.id %}">{{ course }}</a>
+        </li>
+    {% empty %}
+        <li>Ще немає курсів</li>
+    {% endfor %}
+</ul>
+
+{% endblock content %}

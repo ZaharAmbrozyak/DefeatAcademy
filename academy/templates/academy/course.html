@@ -1,0 +1,16 @@
+{% extends 'academy/base.html' %}
+
+{% block content %}
+    <h2>Course: {{ course }}</h2>
+
+    <h3>Tests:</h3>
+    <ul>
+        {% for test in tests %}
+            <li>
+                <p><a href="{% url 'academy:test' course.id test.id %}">{{ test.name|linebreaks }}</a></p>
+            </li>
+            {% empty %}
+            <li>Тестів ще немає.</li>
+        {% endfor %}
+    </ul>
+{% endblock content %}

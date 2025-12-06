@@ -1,0 +1,35 @@
+{% extends 'academy/base.html' %}
+
+{% block content %}
+<h1>{{ test.name }}</h1>
+
+<form action="" method="post">
+    {% csrf_token %}
+    {% for question in test.questions.all %}
+    <div class="question-block" style="margin-bottom: 25px;">
+        <h3>{{ forloop.counter }}. {{ question.text }}</h3>
+
+        {% for choice in question.choices.all %}
+        <div>
+            <label>
+                <input type="radio"
+                       name="question_{{ question.id }}"
+                       value="{{ choice.id }}"
+                       required>
+                {{ choice.text }}
+            </label>
+        </div>
+        {% endfor %}
+    </div>
+    {% empty %}
+    <p>Питань немає.</p>
+    {% endfor %}
+
+    {% if test.questions.exists %}
+    <button type="submit">
+        Відправити відповіді
+    </button>
+    {% endif %}
+</form>
+
+{% endblock content %}
