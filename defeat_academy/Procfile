@@ -1,0 +1,1 @@
+web: gunicorn defeat_academy.wsgi --log-file -
